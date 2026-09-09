@@ -10,11 +10,24 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+function formatFileEntry(entry: string): string {
+  const separatorIndex = entry.indexOf("|");
+  if (separatorIndex === -1) return escapeHtml(entry);
+
+  const fileName = entry.slice(0, separatorIndex);
+  const url = entry.slice(separatorIndex + 1);
+  const safeUrl = /^https?:\/\//.test(url) ? url : "";
+
+  if (!safeUrl) return escapeHtml(fileName);
+
+  return `<a href="${escapeHtml(safeUrl)}" style="color:#e03c8a;text-decoration:underline;">${escapeHtml(fileName)}</a>`;
+}
+
 function formatAnswer(value: Answers[string] | undefined): string {
   if (value === undefined || value === null) return "<em>Δεν απαντήθηκε</em>";
   if (Array.isArray(value)) {
     if (value.length === 0) return "<em>Δεν απαντήθηκε</em>";
-    return value.map((item) => escapeHtml(item)).join(", ");
+    return value.map((item) => (item.includes("|") ? formatFileEntry(item) : escapeHtml(item))).join("<br />");
   }
   const trimmed = value.trim();
   if (trimmed.length === 0) return "<em>Δεν απαντήθηκε</em>";

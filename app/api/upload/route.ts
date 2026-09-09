@@ -1,5 +1,5 @@
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { uploadFileToDrive } from "@/lib/google-drive";
 
 export const runtime = "nodejs";
 
@@ -29,23 +29,17 @@ export async function POST(request: Request) {
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const safeName = sanitizeFileName(file.name || "upload");
     const fileName = `${prefix}${timestamp}_${safeName}`;
+    const pathname = `questionnaire/${uploadTarget}/${fileName}`;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-
-    await uploadFileToDrive({
-      buffer,
-      fileName,
-      mimeType: file.type || "application/octet-stream",
-      uploadTarget
+    const blob = await put(pathname, file, {
+      access: "public",
+      contentType: file.type || "application/octet-stream"
     });
 
-    return NextResponse.json({ fileName });
+    return NextResponse.json({ fileName: safeName, url: blob.url });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("[v0] Upload error:", message);
-    return NextResponse.json(
-      { error: "Το αρχείο δεν ανέβηκε. Δοκιμάστε ξανά ή χρησιμοποιήστε το shared folder." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Το αρχείο δεν ανέβηκε. Δοκιμάστε ξανά." }, { status: 500 });
   }
 }
