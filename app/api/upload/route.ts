@@ -41,7 +41,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ fileName });
   } catch (error) {
-    console.error("[v0] Upload error:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[v0] Upload error:", message);
     return NextResponse.json(
       { error: "Το αρχείο δεν ανέβηκε. Δοκιμάστε ξανά ή χρησιμοποιήστε το shared folder." },
       { status: 500 }
