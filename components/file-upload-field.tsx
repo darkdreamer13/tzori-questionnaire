@@ -35,7 +35,7 @@ export function FileUploadField({ question, uploadedFiles, onChange, inputId, de
     setStatus("uploading");
 
     try {
-      const uploadedNames: string[] = [];
+      const uploadedEntries: string[] = [];
 
       for (const file of files) {
         const formData = new FormData();
@@ -53,11 +53,11 @@ export function FileUploadField({ question, uploadedFiles, onChange, inputId, de
           throw new Error(body?.error ?? "Το αρχείο δεν ανέβηκε.");
         }
 
-        const data = (await response.json()) as { fileName: string };
-        uploadedNames.push(data.fileName);
+        const data = (await response.json()) as { fileName: string; url: string };
+        uploadedEntries.push(`${data.fileName}|${data.url}`);
       }
 
-      onChange([...uploadedFiles, ...uploadedNames]);
+      onChange([...uploadedFiles, ...uploadedEntries]);
       setStatus("idle");
     } catch (error) {
       setStatus("error");
@@ -67,8 +67,13 @@ export function FileUploadField({ question, uploadedFiles, onChange, inputId, de
     }
   }
 
-  function removeFile(fileName: string) {
-    onChange(uploadedFiles.filter((name) => name !== fileName));
+  function removeFile(entry: string) {
+    onChange(uploadedFiles.filter((item) => item !== entry));
+  }
+
+  function getDisplayName(entry: string): string {
+    const separatorIndex = entry.indexOf("|");
+    return separatorIndex === -1 ? entry : entry.slice(0, separatorIndex);
   }
 
   return (
@@ -102,15 +107,15 @@ export function FileUploadField({ question, uploadedFiles, onChange, inputId, de
 
       {uploadedFiles.length > 0 ? (
         <ul className="flex flex-col gap-2">
-          {uploadedFiles.map((fileName) => (
+          {uploadedFiles.map((entry) => (
             <li
-              key={fileName}
+              key={entry}
               className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted px-4 py-2 text-sm text-foreground"
             >
-              <span className="truncate">{fileName}</span>
+              <span className="truncate">{getDisplayName(entry)}</span>
               <button
                 type="button"
-                onClick={() => removeFile(fileName)}
+                onClick={() => removeFile(entry)}
                 className="shrink-0 text-sm font-medium text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
               >
                 Αφαίρεση
