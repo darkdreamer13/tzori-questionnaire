@@ -5,8 +5,8 @@ export function PromotersLogo({ className }: { className?: string }) {
     <Image
       src="/promoters-logo.png"
       alt="Promoters — Digital Marketing 360°"
-      width={180}
-      height={40}
+      width={395}
+      height={133}
       priority
       className={className}
     />
